@@ -2,7 +2,6 @@
 using BusinessLogic.Interface.WitnessReports;
 using Common.Error;
 using Common.Models.WitnessReport;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace WitnessReportAPI.Controllers
         }
 
         /// <summary>
-        /// Gets Witness Reports by specified case name.
+        /// Retrieves Witness Reports by specified case name.
         /// </summary>
         /// <param name="caseName">The case name.</param>
         /// <returns></returns>
@@ -42,6 +41,10 @@ namespace WitnessReportAPI.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Retrieves all Witness Reports
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [SwaggerResponse((int)HttpStatusCode.OK, "List of all Witness Reports. ", typeof(IList<WitnessReportVMResponse>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal Server Error.", typeof(ErrorModel))]
@@ -53,6 +56,11 @@ namespace WitnessReportAPI.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Stores new Witness Report
+        /// </summary>
+        /// <param name="witnessReportVMRequest">The Witness Report to be stored. </param>
+        /// <returns></returns>
         [HttpPost]
         [SwaggerResponse((int)HttpStatusCode.Created, "Created specified Witness Report.")]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal Server Error.", typeof(ErrorModel))]
@@ -62,7 +70,7 @@ namespace WitnessReportAPI.Controllers
             WitnessReport witnessReport = this.mapper.Map<WitnessReport>(witnessReportVMRequest);
             this.witnessReportService.Save(witnessReport);
 
-            return Created(LOCATION_PREFIX, witnessReport.Id);
+            return StatusCode((int)HttpStatusCode.Created);
         }
 
         

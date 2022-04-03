@@ -1,9 +1,7 @@
 ﻿using Common.Models.WitnessReport;
 using DataAccess.EF.Context;
-using DataAccess.Interface;
+using DataAccess.Interface.Repository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,25 +26,9 @@ namespace DataAccess.Repository
             return this.dbContext.WitnessReports.Where(x => x.CaseName == caseName).AsNoTracking().ToList();
         }
 
-        public void Save(WitnessReport witnessReport)
+        public void Insert(WitnessReport witnessReport)
         {
             this.dbContext.WitnessReports.Add(witnessReport);
-            this.dbContext.SaveChanges();
-        }
-
-        public IDbContextTransaction OpenTransaction()
-        {
-            return this.dbContext.Database.BeginTransaction();
-        }
-
-        public void CommitTransaction()
-        {
-            this.dbContext.Database.CommitTransaction();
-        }
-
-        public void RollbackTransaction()
-        {
-            this.dbContext.Database.RollbackTransaction();
         }
     }
 }

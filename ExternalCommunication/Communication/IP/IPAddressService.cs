@@ -26,6 +26,8 @@ namespace ExternalCommunication.Communication.IP
             string apiKey = this.configuration["ipifyApiParams:apiKey"];
             string ip = string.Empty;
 
+            //Since httpContextAccessor retrieves ::1 for IP Address when running application on local machine,
+            //here we use DEBUG directive and read testIpAddress from configuration file
 #if DEBUG
             ip = this.configuration["ipifyApiParams:testIpAddress"];
 #else

@@ -1,9 +1,7 @@
 ﻿using Common.Models.CommunicationData;
-using Common.Models.FBI;
 using ExternalCommunication.Interface;
 using ExternalCommunication.Interface.FBI;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ExternalCommunication.Communication.FBI
