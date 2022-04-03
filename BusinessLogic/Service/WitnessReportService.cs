@@ -3,9 +3,10 @@ using Common.Exceptions;
 using Common.Models.CommunicationData;
 using Common.Models.IP;
 using Common.Models.WitnessReport;
-using DataAccess.Interface;
+using DataAccess.Interface.UoW;
 using ExternalCommunication.Interface.FBI;
 using ExternalCommunication.Interface.IP;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 
@@ -13,14 +14,14 @@ namespace BusinessLogic.Service
 {
     public class WitnessReportService : IWitnessReportService
     {
-        private readonly IWitnessReportRepository witnessReportRepository;
+        private readonly IUnitOfWork unitOfWork;
         private readonly IFBICaseService fbiCaseService;
         private readonly IIPAddressService ipAddressService;
         private readonly IWitnessReportValidationService validationService;
 
-        public WitnessReportService(IWitnessReportRepository witnessReportRepository, IFBICaseService fbiCaseService, IIPAddressService ipAddressService, IWitnessReportValidationService witnessReportValidationService)
+        public WitnessReportService(IUnitOfWork unitOfWork, IFBICaseService fbiCaseService, IIPAddressService ipAddressService, IWitnessReportValidationService witnessReportValidationService)
         {
-            this.witnessReportRepository = witnessReportRepository;
+            this.unitOfWork = unitOfWork;
             this.fbiCaseService = fbiCaseService;
             this.ipAddressService = ipAddressService;
             this.validationService = witnessReportValidationService;
@@ -28,14 +29,14 @@ namespace BusinessLogic.Service
 
         public IList<WitnessReport> GetByCaseName(string caseName)
         {
-            IList<WitnessReport> witnessReports = this.witnessReportRepository.GetByCaseName(caseName);
+            IList<WitnessReport> witnessReports = this.unitOfWork.WitnessReport.GetByCaseName(caseName);
             this.validationService.ValidateFoundedWitnessReports(witnessReports);
             return witnessReports;
         }
 
         public IList<WitnessReport> GetAll()
         {
-            return this.witnessReportRepository.GetAll();
+            return this.unitOfWork.WitnessReport.GetAll();
         }
 
         public void Save(WitnessReport witnessReport)
@@ -49,18 +50,21 @@ namespace BusinessLogic.Service
 
             this.PopulateWitnessReportData(witnessReport, ipAddress);
 
-            try
+            using (IDbContextTransaction transaction = this.unitOfWork.OpenTransaction())
             {
-                this.witnessReportRepository.OpenTransaction();
-                this.witnessReportRepository.Save(witnessReport);
-
-                this.witnessReportRepository.CommitTransaction();
+                try
+                {
+                    this.unitOfWork.WitnessReport.Insert(witnessReport);
+                    this.unitOfWork.Save();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new DatabaseException("Not able to store the witness report. Database error.", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                this.witnessReportRepository.RollbackTransaction();
-                throw new DatabaseException("Not able to store the witness report. Database error.", ex);
-            }
+                
         }
 
         private void PopulateWitnessReportData(WitnessReport witnessReport, IPAddress ipAddress)

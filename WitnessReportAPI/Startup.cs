@@ -1,8 +1,10 @@
 using BusinessLogic.Interface.WitnessReports;
 using BusinessLogic.Service;
 using DataAccess.EF.Context;
-using DataAccess.Interface;
+using DataAccess.Interface.Repository;
+using DataAccess.Interface.UoW;
 using DataAccess.Repository;
+using DataAccess.UoW;
 using ExternalCommunication.Communication;
 using ExternalCommunication.Communication.FBI;
 using ExternalCommunication.Communication.IP;
@@ -12,19 +14,12 @@ using ExternalCommunication.Interface.IP;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WitnessReportAPI.Middleware;
 using WitnessReportAPI.Profiles;
 
@@ -46,6 +41,7 @@ namespace WitnessReportAPI
             services.AddDbContext<WitnessReportDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IWitnessReportRepository, WitnessReportRepository>();
 
             //Registration of Business Logic layer 
